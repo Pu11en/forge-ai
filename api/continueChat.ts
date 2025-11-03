@@ -17,10 +17,6 @@ type VercelResponse = ServerResponse & {
 };
 
 
-export const config = {
-  runtime: '@vercel/node',
-};
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
   if (req.method !== 'POST') {
