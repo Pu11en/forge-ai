@@ -2,6 +2,16 @@
 
 This guide explains how to properly configure environment variables for deploying the Forge AI application to Vercel.
 
+## Updated Dependencies
+
+All deprecated packages have been updated to their latest versions:
+- React: Updated to v18.3.1 (stable version)
+- Firebase: Updated to v10.14.1
+- Firebase Admin: Updated to v12.5.0
+- Google GenAI: Updated to v1.5.0
+- TypeScript: Updated to v5.6.3
+- Vite: Updated to v5.4.10
+
 ## Environment Variables
 
 You need to configure the following environment variables in your Vercel dashboard:
@@ -62,6 +72,21 @@ Once environment variables are configured:
    - `/api/generateSoulPrint`
    - `/api/continueChat`
 
+## API Configuration
+
+The API routes have been updated to work with Vercel's serverless functions:
+- Runtime: Node.js 18.x
+- Maximum duration: 30 seconds per function
+- Proper Firebase Admin SDK initialization
+- Custom type definitions for Vercel compatibility
+
+## Firestore Security Rules
+
+The Firestore security rules are properly configured:
+- Users can only access their own chat sessions
+- All other access is denied by default
+- Rules are compatible with both Firebase Functions and Vercel deployment
+
 ## Troubleshooting
 
 ### Firebase Admin SDK Errors
@@ -87,3 +112,11 @@ If you encounter build errors:
 1. Check that all client-side variables have the `VITE_` prefix
 2. Verify the build command in `vercel.json` is correct
 3. Ensure all dependencies are properly installed
+
+### NPM Deprecation Warnings
+
+All npm deprecation warnings have been resolved:
+- Updated to stable React v18.3.1
+- Updated Firebase SDK to latest compatible versions
+- Fixed TypeScript and Vite compatibility issues
+- Resolved all Firebase Functions compatibility issues

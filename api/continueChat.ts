@@ -1,6 +1,21 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { IncomingMessage, ServerResponse } from 'http';
 import { GoogleGenAI } from '@google/genai';
 import admin from 'firebase-admin';
+
+// Type definitions for Vercel serverless functions
+type VercelRequest = IncomingMessage & {
+  body?: any;
+  query?: Record<string, string>;
+  cookies?: Record<string, string>;
+  method?: string;
+  headers: Record<string, string>;
+};
+
+type VercelResponse = ServerResponse & {
+  status(code: number): VercelResponse;
+  json(data: any): void;
+  send(data?: any): void;
+};
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
@@ -22,7 +37,7 @@ if (!admin.apps.length) {
 }
 
 export const config = {
-  runtime: 'nodejs',
+  runtime: 'nodejs18.x',
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
