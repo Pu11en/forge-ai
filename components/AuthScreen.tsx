@@ -1,20 +1,13 @@
-
-
-
 import React from 'react';
-// FIX: Use compat imports to align with firebase/config.ts changes
-import * as firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from '../firebase/config';
 import { Logo } from './Logo';
 
 const AuthScreen: React.FC = () => {
     const handleGoogleSignIn = async () => {
-        // FIX: Use compat provider
-        const provider = new firebase.auth.GoogleAuthProvider();
+        const provider = new GoogleAuthProvider();
         try {
-            // FIX: Use compat signInWithPopup method
-            await auth.signInWithPopup(provider);
+            await signInWithPopup(auth, provider);
         } catch (error) {
             console.error("Error during Google sign-in:", error);
             alert("Could not sign in. Please check the console for more details.");

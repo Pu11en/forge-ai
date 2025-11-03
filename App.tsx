@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect, useCallback } from 'react';
-import type * as firebase from 'firebase/compat/app';
+import { User } from 'firebase/auth';
 
 import WelcomeScreen from './components/WelcomeScreen';
 import PillarQuestionnaire from './components/PillarQuestionnaire';
@@ -13,12 +13,13 @@ import AuthScreen from './components/AuthScreen';
 
 import { PILLARS } from './constants';
 import type { AppState, Answers, PillarSummaries, ChatSession, Message } from './types';
-import { auth, functions } from './firebase/config';
+import { auth } from './firebase/config';
 import { getChatSessions, createChatSession, updateChatMessages } from './firebase/firestore';
+import { apiService } from './services/api';
 
 
 const App: React.FC = () => {
-    const [user, setUser] = useState<firebase.User | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [appState, setAppState] = useState<AppState>('welcome');
     
@@ -34,10 +35,6 @@ const App: React.FC = () => {
     const [isProcessingChat, setIsProcessingChat] = useState(false);
     const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-
-    // Firebase Functions
-    const generateSoulPrint = functions.httpsCallable('generateSoulPrint');
-    const continueChat = functions.httpsCallable('continueChat');
 
     // Authentication Effect
     useEffect(() => {
@@ -79,15 +76,15 @@ const App: React.FC = () => {
     const handleFinishQuestionnaire = useCallback(async () => {
         setAppState('processing');
         try {
-            const result: any = await generateSoulPrint({ answers });
-            setPillarSummaries(result.data.pillarSummaries);
-            setSystemPrompt(result.data.systemPrompt);
+            const result = await apiService.generateSoulPrint(answers);
+            setPillarSummaries(result.pillarSummaries);
+            setSystemPrompt(result.systemPrompt);
             setAppState('report');
         } catch (error) {
             console.error("Error generating SoulPrint:", error);
             setAppState('error');
         }
-    }, [answers, generateSoulPrint]);
+    }, [answers]);
 
     const handleStartChat = async (promptOverride?: string) => {
         if (!user) return;
@@ -104,11 +101,8 @@ const App: React.FC = () => {
             const newSession = await createChatSession(user.uid, "New SoulPrint Chat", finalSystemPrompt);
             
             // 2. Immediately get the AI's first message from the backend
-            const result: any = await continueChat({
-                messages: [], // Send empty history to get the initial greeting
-                systemPrompt: newSession.systemPrompt
-            });
-            const initialAiMessage: Message = { sender: 'ai', text: result.data.text };
+            const result = await apiService.continueChat([], newSession.systemPrompt);
+            const initialAiMessage: Message = { sender: 'ai', text: result.text };
             
             // 3. Update the new session with the first message
             const sessionWithFirstMessage: ChatSession = { ...newSession, messages: [initialAiMessage] };
@@ -174,12 +168,9 @@ const App: React.FC = () => {
             // Update DB with user message first
             await updateChatMessages(activeSessionId, updatedMessages);
             
-            const result: any = await continueChat({
-                messages: updatedMessages,
-                systemPrompt: activeSession.systemPrompt
-            });
+            const result = await apiService.continueChat(updatedMessages, activeSession.systemPrompt);
 
-            const aiMessage: Message = { sender: 'ai', text: result.data.text };
+            const aiMessage: Message = { sender: 'ai', text: result.text };
             const finalMessages = [...updatedMessages, aiMessage];
 
             const finalSessions = chatSessions.map(s => s.id === activeSessionId ? { ...s, messages: finalMessages } : s);

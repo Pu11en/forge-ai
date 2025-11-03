@@ -1,32 +1,36 @@
-import * as firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-import 'firebase/compat/functions';
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
 
-// Your web app's Firebase configuration
+// Firebase configuration using environment variables
 const firebaseConfig = {
-    apiKey: "AIzaSyDL05OxCJI55B4p1cqEkVPrX97qBatEB_o",
-    authDomain: "arche-forge.firebaseapp.com",
-    projectId: "arche-forge",
-    storageBucket: "arche-forge.firebasestorage.app",
-    messagingSenderId: "728719470809",
-    appId: "1:728719470809:web:65db6d16a66cdde6bf8ec8",
-    measurementId: "G-4W90MC3T6R"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-const functions = firebase.functions();
+// Initialize and export Firebase services
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const functions = getFunctions(app);
 
 // For local testing of functions, you might use the emulator
 // Make sure to only do this in a development environment check
+// Commented out to prevent connection issues when emulators aren't running
 // if (window.location.hostname === "localhost") {
-//   functions.useEmulator("localhost", 5001);
+//   connectFunctionsEmulator(functions, "localhost", 5001);
+//   connectFirestoreEmulator(db, "localhost", 8080);
+//   connectAuthEmulator(auth, "http://localhost:9099");
 // }
 
-export { auth, db, functions };
+export { app, analytics };
