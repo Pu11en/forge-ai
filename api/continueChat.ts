@@ -18,7 +18,7 @@ type VercelResponse = ServerResponse & {
 
 
 export const config = {
-  runtime: 'nodejs18.x',
+  runtime: '@vercel/node',
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

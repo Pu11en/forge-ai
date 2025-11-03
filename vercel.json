@@ -5,12 +5,10 @@
   "installCommand": "npm install",
   "functions": {
     "api/generateSoulPrint.ts": {
-      "maxDuration": 30,
-      "runtime": "nodejs18.x"
+      "maxDuration": 30
     },
     "api/continueChat.ts": {
-      "maxDuration": 30,
-      "runtime": "nodejs18.x"
+      "maxDuration": 30
     }
   },
   "env": {
