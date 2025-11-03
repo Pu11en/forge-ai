@@ -30,6 +30,12 @@ A React application that creates personalized AI chat experiences based on psych
    npm run dev
    ```
 
+#### Alternative Development Modes
+
+- **For local development with API server**: `npm run dev`
+- **For Vercel-style development (serverless functions)**: `npm run dev:vercel`
+- **Build for production**: `npm run build`
+
 ## Deployment to Vercel
 
 ### Prerequisites

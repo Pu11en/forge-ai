@@ -6,8 +6,7 @@ import WelcomeScreen from './components/WelcomeScreen';
 import PillarQuestionnaire from './components/PillarQuestionnaire';
 import ProcessingScreen from './components/ProcessingScreen';
 import ReportScreen from './components/ReportScreen';
-import ChatInterface from './components/ChatInterface';
-import Sidebar from './components/Sidebar';
+import ChatLayout from './components/ChatLayout';
 
 import { PILLARS } from './constants';
 import type { AppState, Answers, PillarSummaries, ChatSession, Message } from './types';
@@ -201,24 +200,17 @@ const App: React.FC = () => {
             case 'report':
                 return <ReportScreen summaries={pillarSummaries} systemPrompt={systemPrompt} onStartChat={() => handleStartChat()} />;
             case 'chat':
-                const activeSession = chatSessions.find(s => s.id === activeSessionId);
                 return (
-                    <div className="flex w-full h-screen bg-gray-900">
-                        <Sidebar
-                            sessions={chatSessions}
-                            activeSessionId={activeSessionId}
-                            onSessionSelect={setActiveSessionId}
-                            onNewChat={handleNewChat}
-                            onLogout={handleNewChat}
-                            userEmail={null}
-                        />
-                        <ChatInterface 
-                            session={activeSession || null}
-                            onSendMessage={handleSendMessage}
-                            isProcessing={isProcessingChat}
-                            onNewChat={handleNewChat}
-                        />
-                    </div>
+                    <ChatLayout
+                        sessions={chatSessions}
+                        activeSessionId={activeSessionId}
+                        onSessionSelect={setActiveSessionId}
+                        onNewChat={handleNewChat}
+                        onSendMessage={handleSendMessage}
+                        isProcessing={isProcessingChat}
+                        onLogout={handleNewChat}
+                        userEmail={null}
+                    />
                 );
             case 'error':
                  return (

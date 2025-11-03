@@ -1,8 +1,8 @@
 import type { Answers, PillarSummaries, Message } from '../types';
 
-const API_BASE_URL = process.env.NODE_ENV === 'production'
-  ? '' // In production, use relative paths
-  : 'http://localhost:3001'; // In development, use local server
+// For both development and production, use relative paths
+// Vercel will handle the API routes in both environments
+const API_BASE_URL = '';
 
 class ApiService {
   private async makeRequest(endpoint: string, data: any): Promise<any> {

@@ -129,7 +129,7 @@ const PILLARS_FUNC = [
     }
 ];
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export async function generateSoulPrint(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -172,6 +172,10 @@ Summary of ${pillar.title}:`;
         contents: prompt,
       });
 
+      if (!response.text) {
+        throw new Error(`No response generated for pillar: ${pillar.title}`);
+      }
+      
       pillarSummaries[pillar.title] = response.text;
     }
 

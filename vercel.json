@@ -10,8 +10,5 @@
     "api/continueChat.ts": {
       "maxDuration": 30
     }
-  },
-  "env": {
-    "GEMINI_API_KEY": "AIzaSyBEJ9XF30CUta1EE_z8wev0st7MxQHD53M"
   }
 }
