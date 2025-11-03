@@ -25,6 +25,18 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        outDir: 'dist',
+        sourcemap: true,
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              vendor: ['react', 'react-dom'],
+              firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore']
+            }
+          }
+        }
       }
     };
 });
