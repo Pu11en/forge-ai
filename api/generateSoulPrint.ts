@@ -4,12 +4,20 @@ import admin from 'firebase-admin';
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
+  const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  };
+  
+  // Validate required environment variables
+  if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+    console.error("Missing Firebase Admin SDK configuration. Please check environment variables.");
+    throw new Error("Firebase Admin SDK configuration is incomplete");
+  }
+  
   admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
+    credential: admin.credential.cert(serviceAccount),
   });
 }
 
@@ -124,6 +132,10 @@ const PILLARS_FUNC = [
         ]
     }
 ];
+
+export const config = {
+  runtime: 'nodejs',
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
