@@ -63,14 +63,16 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, onSessionS
             
             {onLogout && (
                 <div className="border-t border-gray-700 mt-2 pt-2">
-                    <div className="px-3 py-2">
-                        <p className="text-sm font-medium truncate" title={userEmail || ''}>{userEmail || 'No user'}</p>
-                    </div>
+                    {userEmail && (
+                        <div className="px-3 py-2">
+                            <p className="text-sm font-medium truncate" title={userEmail}>{userEmail}</p>
+                        </div>
+                    )}
                     <button
                         onClick={onLogout}
                         className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded-md transition-colors"
                     >
-                        Logout
+                        {userEmail ? 'Logout' : 'Reset App'}
                     </button>
                 </div>
             )}

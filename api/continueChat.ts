@@ -1,6 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { GoogleGenAI } from '@google/genai';
-import admin from 'firebase-admin';
 
 // Type definitions for Vercel serverless functions
 type VercelRequest = IncomingMessage & {
@@ -17,24 +16,6 @@ type VercelResponse = ServerResponse & {
   send(data?: any): void;
 };
 
-// Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  };
-  
-  // Validate required environment variables
-  if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
-    console.error("Missing Firebase Admin SDK configuration. Please check environment variables.");
-    throw new Error("Firebase Admin SDK configuration is incomplete");
-  }
-  
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
 
 export const config = {
   runtime: 'nodejs18.x',
@@ -47,18 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Verify Firebase ID token
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    
-    if (!decodedToken) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    // No authentication required for now
 
     const geminiApiKey = process.env.GEMINI_API_KEY;
     if (!geminiApiKey) {

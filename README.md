@@ -24,7 +24,6 @@ A React application that creates personalized AI chat experiences based on psych
 
 4. Fill in your environment variables:
    - Get a Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
-   - Set up a Firebase project and get your config values
 
 5. Start the development server:
    ```bash
@@ -36,7 +35,6 @@ A React application that creates personalized AI chat experiences based on psych
 ### Prerequisites
 
 - A Vercel account
-- A Firebase project with Firestore enabled
 - A Gemini API key
 
 ### Steps
@@ -48,32 +46,11 @@ A React application that creates personalized AI chat experiences based on psych
 
 2. **Configure Environment Variables**
    
-   In your Vercel project settings, add the following environment variables:
+   In your Vercel project settings, add the following environment variable:
    
-   **Required for the application:**
    - `GEMINI_API_KEY`: Your Gemini API key
-   - `VITE_FIREBASE_API_KEY`: Your Firebase API key
-   - `VITE_FIREBASE_AUTH_DOMAIN`: Your Firebase auth domain
-   - `VITE_FIREBASE_PROJECT_ID`: Your Firebase project ID
-   - `VITE_FIREBASE_STORAGE_BUCKET`: Your Firebase storage bucket
-   - `VITE_FIREBASE_MESSAGING_SENDER_ID`: Your Firebase messaging sender ID
-   - `VITE_FIREBASE_APP_ID`: Your Firebase app ID
-   - `VITE_FIREBASE_MEASUREMENT_ID`: Your Firebase measurement ID
-   
-   **Required for server-side functions:**
-   - `FIREBASE_CLIENT_EMAIL`: Your Firebase service account client email
-   - `FIREBASE_PRIVATE_KEY`: Your Firebase service account private key
 
-3. **Get Firebase Service Account Credentials**
-   
-   - Go to your Firebase project settings
-   - Navigate to "Service accounts" tab
-   - Click "Generate new private key"
-   - Download the JSON file
-   - Extract the `client_email` and `private_key` values
-   - Add them to your Vercel environment variables
-
-4. **Deploy**
+3. **Deploy**
    
    - Vercel will automatically deploy when you push to your repository
    - Or trigger a manual deployment from the Vercel dashboard
@@ -84,16 +61,12 @@ The application is optimized for Vercel with:
 
 - **Frontend**: React + Vite (static files)
 - **Backend**: Vercel Serverless Functions in `/api` directory
-- **Database**: Firebase Firestore
-- **Authentication**: Firebase Auth
 - **AI**: Google Gemini API
 
 ### API Endpoints
 
 - `POST /api/generateSoulPrint` - Generates a psychological profile from questionnaire answers
 - `POST /api/continueChat` - Continues a chat conversation with the AI
-
-Both endpoints require Firebase authentication tokens in the Authorization header.
 
 ## Local Development with API Functions
 
@@ -120,11 +93,7 @@ This will make the API functions available at `http://localhost:3000/api/*`.
 
 ### Common Issues
 
-1. **Firebase Authentication Errors**
-   - Ensure all Firebase environment variables are set correctly
-   - Check that your Firebase project has Authentication enabled
-
-2. **Gemini API Errors**
+1. **Gemini API Errors**
    - Verify your API key is valid and has quota
    - Check that the API key is set in environment variables
 

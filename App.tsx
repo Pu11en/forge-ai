@@ -1,7 +1,6 @@
 
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { User } from 'firebase/auth';
 
 import WelcomeScreen from './components/WelcomeScreen';
 import PillarQuestionnaire from './components/PillarQuestionnaire';
@@ -9,17 +8,14 @@ import ProcessingScreen from './components/ProcessingScreen';
 import ReportScreen from './components/ReportScreen';
 import ChatInterface from './components/ChatInterface';
 import Sidebar from './components/Sidebar';
-import AuthScreen from './components/AuthScreen';
 
 import { PILLARS } from './constants';
 import type { AppState, Answers, PillarSummaries, ChatSession, Message } from './types';
-import { auth } from './firebase/config';
-import { getChatSessions, createChatSession, updateChatMessages } from './firebase/firestore';
+import { getChatSessions, createChatSession, updateChatMessages } from './services/localStorage';
 import { apiService } from './services/api';
 
 
 const App: React.FC = () => {
-    const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [appState, setAppState] = useState<AppState>('welcome');
     
@@ -36,12 +32,11 @@ const App: React.FC = () => {
     const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
-    // Authentication Effect
+    // Initialize app and load chat sessions
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-            setUser(currentUser);
-            if (currentUser) {
-                const sessions = await getChatSessions(currentUser.uid);
+        const initializeApp = async () => {
+            try {
+                const sessions = getChatSessions();
                 setChatSessions(sessions);
                 if (sessions.length > 0) {
                     setActiveSessionId(sessions[0].id);
@@ -49,19 +44,15 @@ const App: React.FC = () => {
                 } else {
                     setAppState('welcome');
                 }
-            } else {
-                // Reset all state on logout
-                setAnswers({});
-                setCurrentPillarIndex(0);
-                setPillarSummaries({});
-                setSystemPrompt('');
-                setChatSessions([]);
-                setActiveSessionId(null);
+            } catch (error) {
+                console.error('Error initializing app:', error);
                 setAppState('welcome');
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
-        });
-        return () => unsubscribe();
+        };
+        
+        initializeApp();
     }, []);
 
     const handleAnswerChange = (questionIndex: number, value: string) => {
@@ -87,7 +78,6 @@ const App: React.FC = () => {
     }, [answers]);
 
     const handleStartChat = async (promptOverride?: string) => {
-        if (!user) return;
         const finalSystemPrompt = promptOverride || systemPrompt;
         if (!finalSystemPrompt) {
             console.error("Cannot start chat without a system prompt.");
@@ -97,8 +87,8 @@ const App: React.FC = () => {
 
         setIsLoading(true);
         try {
-            // 1. Create the session object in Firestore (with empty messages)
-            const newSession = await createChatSession(user.uid, "New SoulPrint Chat", finalSystemPrompt);
+            // 1. Create the session object in local storage (with empty messages)
+            const newSession = createChatSession("New SoulPrint Chat", finalSystemPrompt);
             
             // 2. Immediately get the AI's first message from the backend
             const result = await apiService.continueChat([], newSession.systemPrompt);
@@ -107,8 +97,8 @@ const App: React.FC = () => {
             // 3. Update the new session with the first message
             const sessionWithFirstMessage: ChatSession = { ...newSession, messages: [initialAiMessage] };
             
-            // 4. Save the first message to Firestore
-            await updateChatMessages(sessionWithFirstMessage.id, sessionWithFirstMessage.messages);
+            // 4. Save the first message to local storage
+            updateChatMessages(sessionWithFirstMessage.id, sessionWithFirstMessage.messages);
 
             // 5. Update local state to display the new chat
             setChatSessions(prev => [sessionWithFirstMessage, ...prev]);
@@ -151,7 +141,7 @@ const App: React.FC = () => {
     };
     
     const handleSendMessage = async (messageText: string) => {
-        if (!activeSessionId || !user) return;
+        if (!activeSessionId) return;
         
         const activeSession = chatSessions.find(s => s.id === activeSessionId);
         if (!activeSession) return;
@@ -165,8 +155,8 @@ const App: React.FC = () => {
         setIsProcessingChat(true);
 
         try {
-            // Update DB with user message first
-            await updateChatMessages(activeSessionId, updatedMessages);
+            // Update local storage with user message first
+            updateChatMessages(activeSessionId, updatedMessages);
             
             const result = await apiService.continueChat(updatedMessages, activeSession.systemPrompt);
 
@@ -176,8 +166,8 @@ const App: React.FC = () => {
             const finalSessions = chatSessions.map(s => s.id === activeSessionId ? { ...s, messages: finalMessages } : s);
             setChatSessions(finalSessions);
 
-            // Update DB with AI message
-            await updateChatMessages(activeSessionId, finalMessages);
+            // Update local storage with AI message
+            updateChatMessages(activeSessionId, finalMessages);
 
         } catch (error) {
             console.error("Error sending message:", error);
@@ -185,14 +175,10 @@ const App: React.FC = () => {
             const finalMessages = [...updatedMessages, errorMessage];
             const finalSessions = chatSessions.map(s => s.id === activeSessionId ? { ...s, messages: finalMessages } : s);
             setChatSessions(finalSessions);
-            await updateChatMessages(activeSessionId, finalMessages);
+            updateChatMessages(activeSessionId, finalMessages);
         } finally {
             setIsProcessingChat(false);
         }
-    };
-
-    const handleLogout = async () => {
-        await auth.signOut();
     };
 
     const renderContent = () => {
@@ -223,8 +209,8 @@ const App: React.FC = () => {
                             activeSessionId={activeSessionId}
                             onSessionSelect={setActiveSessionId}
                             onNewChat={handleNewChat}
-                            onLogout={handleLogout}
-                            userEmail={user?.email || null}
+                            onLogout={handleNewChat}
+                            userEmail={null}
                         />
                         <ChatInterface 
                             session={activeSession || null}
@@ -257,10 +243,6 @@ const App: React.FC = () => {
         );
     }
     
-    if (!user) {
-        return <AuthScreen />;
-    }
-
     return (
         <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-gray-800">
             {renderContent()}
